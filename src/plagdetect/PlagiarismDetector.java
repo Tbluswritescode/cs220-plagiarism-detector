@@ -5,6 +5,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Scanner;
 
 public class PlagiarismDetector implements IPlagiarismDetector {
 	private int N = 3;
@@ -16,7 +20,7 @@ public class PlagiarismDetector implements IPlagiarismDetector {
 		results = new HashMap<String, Map<String, Integer>>();
 		allNgrams = new HashMap<String, Set<String>>();
 	}
-	
+
 	@Override
 	public int getN() {
 		return N;
@@ -40,15 +44,31 @@ public class PlagiarismDetector implements IPlagiarismDetector {
 
 	@Override
 	public Map<String, Map<String, Integer>> getResults() {
-		// TODO Auto-generated method stub
+		for (Map.Entry<String, Set<String>> e : allNgrams.entrySet()) {
+			for (Map.Entry<String, Set<String>> f : allNgrams.entrySet()) {
+				if (e.getKey() != f.getKey()) {
+
+				}
+			}
+		}
 		return null;
 	}
 
-	public void readFile(String filename){
+	public void readFile(String filename) {
 		File file = new File(filename);
-		readFile(file);
-		allNgrams.add(filename, recentFile);
-		recentFile = new Set<String>();
+		try {
+			readFile(file);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		allNgrams.put(filename, recentFile);
+		HashMap<String, Integer> a = new HashMap<String, Integer>();
+		for (Map.Entry<String, Set<String>> e : allNgrams.entrySet()) {
+			a.put(e.getKey(), getNumNGramsInCommon(filename, e.getKey()));
+			results.put(filename, a);
+		}
+		recentFile = new HashSet<String>();
 	}
 
 	@Override
@@ -56,36 +76,31 @@ public class PlagiarismDetector implements IPlagiarismDetector {
 		// TODO Auto-generated method stub
 		// most of your work can happen in this method
 		try {
-			Set<String> fileNgrams = new HashSet<String>();
 			Scanner scan = new Scanner(file);
 			while (scan.hasNextLine()) {
-			  String line = scan.nextLine();
-			  for (int i = 0; i < line.length() - N; i++){
-				recentFile.add(line.substring(i, i+N));
-			  }
-			
-			for (Set<String> e : allNgrams.values()){
-				for (String s : e){
-					if (recentFile.contains(s)){
-						count += 1;
-					}
+				String line = scan.nextLine();
+				for (int i = 0; i < line.length() - N; i++) {
+					recentFile.add(line.substring(i, i + N));
 				}
 
 			}
-		}
-		}
-		catch (FileNotFoundException e) {
-
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		}
 
-
-		
 	}
 
 	@Override
-	public int getNumNGramsInCommon(String file1, String file2) {
-		// TODO Auto-generated method stub
-		return 0;
+	public int getNumNGramsInCommon(String filename1, String filename2) {
+		int rv = 0;
+		if (allNgrams.get(filename1) != null && allNgrams.get(filename2) != null) {
+			for (String a : allNgrams.get(filename1)) {
+				if (allNgrams.get(filename2).contains(a)) {
+					rv += 1;
+				}
+			}
+		}
+		return rv;
 	}
 
 	@Override
