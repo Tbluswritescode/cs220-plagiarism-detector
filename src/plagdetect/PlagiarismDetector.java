@@ -4,11 +4,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Scanner;
+import java.util.List;
+import java.util.ArrayList;
 
 public class PlagiarismDetector implements IPlagiarismDetector {
 	private int N = 3;
@@ -84,6 +87,7 @@ public class PlagiarismDetector implements IPlagiarismDetector {
 				}
 
 			}
+			scan.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -106,7 +110,19 @@ public class PlagiarismDetector implements IPlagiarismDetector {
 	@Override
 	public Collection<String> getSuspiciousPairs(int minNgrams) {
 		// TODO Auto-generated method stub
-		return null;
+		Set<String> sus = new HashSet<String>();
+		for (Map.Entry<String, Map<String, Integer>> e : results.entrySet()) {
+			for (Map.Entry<String, Integer> s : e.getValue().entrySet()) {
+				List<String> filenames = new ArrayList<String>();
+				if (s.getValue() > minNgrams) {
+					filenames.add(e.getKey());
+					filenames.add(s.getKey());
+					Collections.sort(filenames);
+					sus.add(filenames.get(0) + " " + filenames.get(1) + " " + s.getValue());
+				}
+			}
+		}
+		return sus;
 	}
 
 	@Override
