@@ -34,8 +34,6 @@ public interface IPlagiarismDetector
      * @return
      */
     Collection<String> getFilenames();
-
-    
     
     /**
      * Given the name of a file, return a collection of the unique n-grams in that file.

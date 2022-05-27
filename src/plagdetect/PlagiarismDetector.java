@@ -17,11 +17,12 @@ public class PlagiarismDetector implements IPlagiarismDetector {
 	private int N = 3;
 	private Map<String, Map<String, Integer>> results;
 	private Map<String, Set<String>> allNgrams;
-	private Set<String> recentFile;
+	private Set<String> recentFile = new HashSet<String>();
 
 	public PlagiarismDetector(int n) {
 		results = new HashMap<String, Map<String, Integer>>();
 		allNgrams = new HashMap<String, Set<String>>();
+		N = n;
 	}
 
 	@Override
@@ -36,7 +37,6 @@ public class PlagiarismDetector implements IPlagiarismDetector {
 
 	@Override
 	public Collection<String> getNgramsInFile(String filename) {
-		readFile(filename);
 		return allNgrams.get(filename);
 	}
 
@@ -47,14 +47,7 @@ public class PlagiarismDetector implements IPlagiarismDetector {
 
 	@Override
 	public Map<String, Map<String, Integer>> getResults() {
-		for (Map.Entry<String, Set<String>> e : allNgrams.entrySet()) {
-			for (Map.Entry<String, Set<String>> f : allNgrams.entrySet()) {
-				if (e.getKey() != f.getKey()) {
-
-				}
-			}
-		}
-		return null;
+		return results;
 	}
 
 	public void readFile(String filename) {
@@ -65,60 +58,78 @@ public class PlagiarismDetector implements IPlagiarismDetector {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		allNgrams.put(filename, recentFile);
+	}
+	
+	private void update(String filename) {
+		allNgrams.put(filename, new HashSet<String>(recentFile));
+		recentFile.clear();
 		HashMap<String, Integer> a = new HashMap<String, Integer>();
 		for (Map.Entry<String, Set<String>> e : allNgrams.entrySet()) {
 			a.put(e.getKey(), getNumNGramsInCommon(filename, e.getKey()));
 			results.put(filename, a);
 		}
-		recentFile = new HashSet<String>();
+	}
+	
+	private void updateResults() {
+		for (Map.Entry<String, Set<String>> e : allNgrams.entrySet()) {
+			for (Map.Entry<String, Set<String>> f : allNgrams.entrySet()) {
+				if (e.getKey() != f.getKey() && results.get(e.getKey()) != null) {
+					results.get(e.getKey()).put(f.getKey(), getNumNGramsInCommon(e.getKey(), f.getKey()));
+				}
+				else {
+					Map<String, Integer> m = new HashMap<String, Integer>();
+					m.put(f.getKey(), getNumNGramsInCommon(e.getKey(), f.getKey()));
+					results.put(e.getKey(), m);
+				}
+			}
+		}
 	}
 
 	@Override
 	public void readFile(File file) throws IOException {
-		// TODO Auto-generated method stub
-		// most of your work can happen in this method
 		try {
 			Scanner scan = new Scanner(file);
 			while (scan.hasNextLine()) {
 				String line = scan.nextLine();
-				for (int i = 0; i < line.length() - N; i++) {
-					recentFile.add(line.substring(i, i + N));
+				String[] words = line.split(" ");
+				for (int i = 0; i <= words.length-N; i++) {
+					String s = "";
+					for (int j = 0; j < N; j++) {
+						s += words[i+j] + " ";
+					}
+					recentFile.add(s);
+					s="";
 				}
-
 			}
+			update(file.getName());
 			scan.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+		
 
 	}
 
 	@Override
 	public int getNumNGramsInCommon(String filename1, String filename2) {
-		int rv = 0;
-		if (allNgrams.get(filename1) != null && allNgrams.get(filename2) != null) {
-			for (String a : allNgrams.get(filename1)) {
-				if (allNgrams.get(filename2).contains(a)) {
-					rv += 1;
-				}
-			}
-		}
-		return rv;
+		Set<String> s = new HashSet<String>(allNgrams.get(filename1));
+		s.retainAll(allNgrams.get(filename2));
+		return s.size();
 	}
 
 	@Override
 	public Collection<String> getSuspiciousPairs(int minNgrams) {
 		// TODO Auto-generated method stub
+		updateResults();
 		Set<String> sus = new HashSet<String>();
 		for (Map.Entry<String, Map<String, Integer>> e : results.entrySet()) {
 			for (Map.Entry<String, Integer> s : e.getValue().entrySet()) {
 				List<String> filenames = new ArrayList<String>();
-				if (s.getValue() > minNgrams) {
+				if (s.getValue() >= minNgrams && e.getKey() != s.getKey()) {
 					filenames.add(e.getKey());
 					filenames.add(s.getKey());
 					Collections.sort(filenames);
-					sus.add(filenames.get(0) + " " + filenames.get(1) + " " + s.getValue());
+					sus.add(filenames.get(0) + " " + filenames.get(1) + " " + s.getValue() + " - " + (allNgrams.get(filenames.get(0)).size() + allNgrams.get(filenames.get(1)).size()) / 2 );
 				}
 			}
 		}

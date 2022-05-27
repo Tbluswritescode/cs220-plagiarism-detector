@@ -37,10 +37,25 @@ class TestAllDocs {
 		// The average essay is less than 500 words long.
 		// What is a good number to put here? Try some different values to
 		// figure that out!
-		Collection<String> pairs = detector.getSuspiciousPairs(500);
+		Collection<String> pairs = detector.getSuspiciousPairs(100);
 		for (String pair : pairs) {
 			System.out.println(pair);
 		}
+		
+		//For looking at Ngram counts to see if plaigarism is likely
+		System.out.println("3338.txt " + detector.getNumNgramsInFile("3338.txt"));
+		System.out.println("3473.txt " + detector.getNumNgramsInFile("3473.txt"));
+		System.out.println("3220.txt " + detector.getNumNgramsInFile("3220.txt"));
+		System.out.println("4134.txt " + detector.getNumNgramsInFile("4134.txt"));
+		System.out.println("3177.txt " + detector.getNumNgramsInFile("3177.txt"));
+		System.out.println("3434.txt " + detector.getNumNgramsInFile("3434.txt"));
+		System.out.println("3333.txt " + detector.getNumNgramsInFile("3333.txt"));
+		System.out.println("4678.txt " + detector.getNumNgramsInFile("4678.txt"));
+		System.out.println("4014.txt " + detector.getNumNgramsInFile("4014.txt"));
+		System.out.println("4046.txt " + detector.getNumNgramsInFile("4046.txt"));
+		System.out.println("2979.txt " + detector.getNumNgramsInFile("2979.txt"));
+		System.out.println("3281.txt " + detector.getNumNgramsInFile("3281.txt"));
+		
 		total = System.currentTimeMillis() - start;
 		System.out.printf("It took %.1f seconds to check for suspicious pairs in the documents\n", total/1000.0);
 	}

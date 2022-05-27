@@ -49,6 +49,7 @@ public class TestSmallDocs
     @Test
     public void testPairs3() throws Exception {
         makeDetector(3);
+        System.out.println(detector.getResults());
         Collection<String> pairs = detector.getSuspiciousPairs(10);
         for (String s : pairs) System.out.println(s);
         assertTrue(pairs.contains("2985.txt 2988.txt 10"));
